@@ -1,5 +1,7 @@
 # 说明
-本项目是在[flownet2-pytorch](https://github.com/NVIDIA/flownet2-pytorch) 上改写成的，为了方便在gpu上进行光流提取。如有疑问，可以查看原文档。
+本项目是在[flownet2-pytorch](https://github.com/NVIDIA/flownet2-pytorch) 上改写成的，为了方便在gpu上进行光流提取。如有疑问，可以查看原项目。
+
+本人主要添加了extract_flow.py来提取光流，以及show_optflow.py来生成光流视频，以便查看。
 ## 安装配置
 #### 1.安装依赖包
 * numpy 

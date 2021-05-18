@@ -22,14 +22,15 @@ def get_frames(video_path, stride):
         ret, frame = cap.read()
         if ret is False: break
         frame = resize_frame(frame)
-        frame = frame[:, :, ::-1]
+        frame = frame[:, :, ::-1]  # BGR2RGB
         frames.append(frame)
         frame_cnt += 1
 
     indices = list(range(8, frame_cnt - 7, stride))
-    frames = np.array(frames)
-    frames = frames[indices]
-    return frames
+    ret = []
+    for idx in indices:
+        ret.append([frames[idx], frames[idx + 1]])  # adjacent two frames
+    return ret
 
 
 if __name__ == '__main__':
@@ -79,20 +80,18 @@ if __name__ == '__main__':
         for video_path in tqdm.tqdm(video_list):
             video_id = os.path.basename(video_path)
             video_id = video_id.split('.')[0]
-            frames = get_frames(video_path, stride=stride)
-            frame_cnt = frames.shape[0]
+            frames_set = get_frames(video_path, stride=stride)
             optical_flow_store = []
 
-            for i in range(1, frame_cnt):
-                im0 = frames[i - 1, ...]
-                im1 = frames[i, ...]
+            for item in frames_set:
+                im0, im1 = item[0], item[1]
                 images = [im0, im1]
                 images = np.array(images).transpose(3, 0, 1, 2)
                 im = torch.from_numpy(images.astype(np.float32)).unsqueeze(0).cuda()
                 result = net(im)  # (1, H, W, 2)
                 result = result.detach().cpu().numpy()
                 optical_flow_store.append(result)
-            f[video_id] = np.concatenate(optical_flow_store, axis=0)  # (frame_cnt - 1, H, W, 2)
+            f[video_id] = np.concatenate(optical_flow_store, axis=0)  # (len(frames_set), H, W, 2)
 
     print('='*20, 'finished', '='*20)
 

@@ -5,6 +5,7 @@ from utils.flow_utils import flow2img
 import numpy as np
 import h5py
 import argparse
+import tqdm
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -15,15 +16,13 @@ if __name__ == '__main__':
     thresh_hold = args.thresh_hold
     optflow_path = os.path.join('./store', '{}_optflow.hdf5'.format(dataset_name))
     optvideo_dir = './store/optvideos'
-    cnt = 0
     if not os.path.exists(optvideo_dir):
         os.makedirs(optvideo_dir)
 
     print('='*20, 'construct optvideos begin', '='*20)
     with h5py.File(optflow_path, 'r') as f:
-        for vid in f.keys():
-            if cnt >= thresh_hold: break
-
+        vid_list = list(f.keys())[:thresh_hold]
+        for vid in tqdm.tqdm(vid_list):
             optflows = f[vid][()]
             optflows_len = optflows.shape[0]
             optflows_save_path = os.path.join(optvideo_dir, '{}.avi'.format(vid))
@@ -35,6 +34,5 @@ if __name__ == '__main__':
                 im = flow2img(single_flow)
                 writer_handle.write(im)
             writer_handle.release()
-            cnt += 1
     print('=' * 20, 'construct optvideos end', '=' * 20)
 
